@@ -220,6 +220,7 @@ WORKDIR /app
 COPY --from=rust-build /src/target/${RUST_TARGET}/release/tuliprox ./tuliprox
 COPY --from=trunk-build /src/frontend/dist ./web
 COPY --from=resource-build /src/resources ./resources
+COPY config.yml /app/config.yml
 
 ENTRYPOINT ["/sbin/tini", "--", "/app/tuliprox"]
 CMD ["-s", "-p", "/app/config"]
