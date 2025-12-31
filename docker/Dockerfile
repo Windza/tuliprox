@@ -204,7 +204,7 @@ ARG RUST_TARGET=x86_64-unknown-linux-musl
 ARG TZ=UTC
 ENV TZ=${TZ}
 
-RUN apk add --no-cache bash curl ca-certificates tini
+RUN apk add --no-cache bash wget nano curl ca-certificates tini
 
 # Copy timezone data and localtime from tz-prep
 COPY --from=tz-prep /output/usr/share/zoneinfo /usr/share/zoneinfo
@@ -220,7 +220,6 @@ WORKDIR /app
 COPY --from=rust-build /src/target/${RUST_TARGET}/release/tuliprox ./tuliprox
 COPY --from=trunk-build /src/frontend/dist ./web
 COPY --from=resource-build /src/resources ./resources
-COPY config.yml /app/config.yml
 
 ENTRYPOINT ["/sbin/tini", "--", "/app/tuliprox"]
 CMD ["-s", "-p", "/app/config"]
