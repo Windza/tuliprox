@@ -62,4 +62,58 @@ video:
     headers:
       Accept: video/*
       User-Agent: |
-        Mozilla/5.0 (AppleTV; U; CPU OS 14_2 like Mac OS X; en-us) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.1 Safari/60_
+        Mozilla/5.0 (AppleTV; U; CPU OS 14_2 like Mac OS X; en-us) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.1 Safari/605.1.15
+    directory: ${env:TULIPROX_HOME}/downloads
+    organize_into_directories: false
+    episode_pattern: .*(?P<episode>[Ss]\d{1,2}(.*?)[Ee]\d{1,2}).*
+
+reverse_proxy:
+  # ✅ REQUIRED (fixes your current error)
+  # Use a long random secret (32+ chars). Do NOT reuse your web_ui auth secret.
+  rewrite_secret: ${env:REWRITE_SECRET}
+
+  resource_retry:
+    max_attempts: 3
+    backoff_millis: 250
+    backoff_multiplier: 1.0
+
+  stream:
+    shared_burst_buffer_mb: 12 # default 12 MB
+
+library:
+  enabled: true
+  scan_directories:
+    - path: "/media/movies"
+      enabled: true
+    - path: "/media/tvshows"
+      enabled: true
+
+  supported_extensions:
+    - "mp4"
+    - "mkv"
+    - "avi"
+    - "mov"
+    - "ts"
+    - "m4v"
+    - "webm"
+
+  metadata:
+    path: "${env:TULIPROX_HOME}/library_metadata"
+    tmdb:
+      enabled: true
+      # api_key: ""  # Get your API key from https://www.themoviedb.org/settings/api
+      rate_limit_ms: 250
+    fallback_to_filename: true
+    formats:
+      # - "nfo"
+
+  classification:
+    series_patterns:
+      - "(?i)s\\d+e\\d+"
+      - "(?i)\\d+x\\d+"
+      - "(?i)season[\\s._-]*\\d+"
+      - "(?i)episode[\\s._-]*\\d+"
+
+  playlist:
+    movie_category: "Local Movies"
+    series_category: "Local Series"
