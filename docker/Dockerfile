@@ -197,6 +197,37 @@ ENTRYPOINT ["/app/tuliprox"]
 CMD ["-s", "-p", "/app/config"]
 
 # -----------------------------------------------------------------
+# Final Image #2: Production image based on scratch
+# -----------------------------------------------------------------
+FROM scratch AS scratch-final
+
+ARG RUST_TARGET=x86_64-unknown-linux-musl
+
+# Copy timezone data and localtime from tz-prep
+COPY --from=tz-prep /output/usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=tz-prep /output/etc/localtime /etc/localtime
+
+# Copy SSL certificates from a builder stage that has them
+COPY --from=rust-build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
+# App
+WORKDIR /app
+COPY --from=rust-build /src/target/${RUST_TARGET}/release/tuliprox ./tuliprox
+COPY --from=trunk-build /src/frontend/dist ./web
+COPY --from=resource-build /src/resources ./resources
+
+# ✅ Put config in the two most common expected locations:
+#   - /app/config.yml (common default)
+#   - /app/config/config.yml (directory-based setups)
+COPY config/ ./config/
+COPY config/config.yml ./config.yml
+
+ENTRYPOINT ["/app/tuliprox"]
+# If tuliprox uses -p as a *directory*, keep this:
+CMD ["-s", "-p", "/app/config"]
+
+
+# -----------------------------------------------------------------
 # Final Image #3: Production image based on Alpine
 # -----------------------------------------------------------------
 FROM alpine:latest AS alpine-final
@@ -205,22 +236,21 @@ ARG RUST_TARGET=x86_64-unknown-linux-musl
 ARG TZ=UTC
 ENV TZ=${TZ}
 
-RUN apk add --no-cache bash wget nano curl ca-certificates tini
+RUN apk add --no-cache bash wget nano curl ca-certificates tini tzdata
 
-# Copy timezone data and localtime from tz-prep
-COPY --from=tz-prep /output/usr/share/zoneinfo /usr/share/zoneinfo
-COPY --from=tz-prep /output/etc/localtime /etc/localtime
-
-# Copy SSL certificates `ca-certificates` from Alpine-based Stage (tz-prep ist Alpine)
-COPY --from=tz-prep /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-
-# Default timezone fallback
-RUN ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime
+# Timezone
+RUN mkdir -p /usr/share/zoneinfo \
+ && ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime
 
 WORKDIR /app
 COPY --from=rust-build /src/target/${RUST_TARGET}/release/tuliprox ./tuliprox
 COPY --from=trunk-build /src/frontend/dist ./web
 COPY --from=resource-build /src/resources ./resources
 
+# ✅ COPY CONFIG (this was missing entirely before)
+COPY config/ ./config/
+COPY config/config.yml ./config.yml
+
 ENTRYPOINT ["/sbin/tini", "--", "/app/tuliprox"]
 CMD ["-s", "-p", "/app/config"]
+
