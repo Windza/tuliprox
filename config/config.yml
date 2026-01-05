@@ -1,9 +1,11 @@
 # TULIPROX_HOME should point to /app for docker
 process_parallel: true
+
 api:
   host: 0.0.0.0
   port: 8901
   web_root: ${env:TULIPROX_HOME}/web
+
 working_dir: ${env:TULIPROX_HOME}/data
 backup_dir: ${env:TULIPROX_HOME}/backup
 custom_stream_response_path: ${env:TULIPROX_HOME}/resources
@@ -60,73 +62,4 @@ video:
     headers:
       Accept: video/*
       User-Agent: |
-        Mozilla/5.0 (AppleTV; U; CPU OS 14_2 like Mac OS X; en-us) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.1 Safari/605.1.15
-    directory: ${env:TULIPROX_HOME}/downloads
-    organize_into_directories: false
-    episode_pattern: .*(?P<episode>[Ss]\d{1,2}(.*?)[Ee]\d{1,2}).*
-
-reverse_proxy:
-  resource_retry:
-    max_attempts: 3
-    backoff_millis: 250
-    backoff_multiplier: 1.0
-  stream:
-    shared_burst_buffer_mb: 12 # default 12 MB
-
-library:
-  enabled: true
-  scan_directories:
-    - path: "/media/movies"
-      enabled: true
-
-    - path: "/media/tvshows"
-      enabled: true
-
-    # You can add more directories as needed
-    # - path: "/mnt/videos"
-    #   enabled: false
-
-  supported_extensions:
-    - "mp4"
-    - "mkv"
-    - "avi"
-    - "mov"
-    - "ts"
-    - "m4v"
-    - "webm"
-
-  # Metadata configuration
-  metadata:
-    # Location to store metadata cache (JSON files)
-    path: "${env:TULIPROX_HOME}/library_metadata"
-
-    # TMDB (The Movie Database) API integration
-    tmdb:
-      enabled: true
-      # api_key: ""  # Get your API key from https://www.themoviedb.org/settings/api
-      rate_limit_ms: 250  # Milliseconds between API calls (default: 250ms)
-
-    # Fallback to filename parsing if no metadata found
-    fallback_to_filename: true
-
-    # Metadata output formats
-    formats:
-      # - "nfo"  # Optionally write Kodi-compatible NFO files
-
-  # Classification rules for movies vs series
-  classification:
-    # Regex patterns to identify series/TV shows
-    # If a file/folder name matches any pattern, it's classified as a series
-    series_patterns:
-      - "(?i)s\\d+e\\d+"          # S01E02 format
-      - "(?i)\\d+x\\d+"            # 1x02 format
-      - "(?i)season[\\s._-]*\\d+"  # "Season 1" format
-      - "(?i)episode[\\s._-]*\\d+" # "Episode 1" format
-
-  # Playlist integration
-  playlist:
-    # Group name for movies in M3U/Xtream playlist
-    movie_category: "Local Movies"
-
-    # Group name for series in M3U/Xtream playlist
-    series_category: "Local Series"
+        Mozilla/5.0 (AppleTV; U; CPU OS 14_2 like Mac OS X; en-us) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.1 Safari/60_
