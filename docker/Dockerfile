@@ -184,30 +184,6 @@ COPY --from=tz-prep /output/usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=tz-prep /output/etc/localtime /etc/localtime
 
 # Copy SSL certificates from a builder stage that has them
-COPY --from=rust-build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-
-# App
-WORKDIR /app
-COPY --from=rust-build /src/target/${RUST_TARGET}/release/tuliprox ./tuliprox
-COPY --from=trunk-build /src/frontend/dist ./web
-COPY --from=resource-build /src/resources ./resources
-COPY config/* ./
-
-ENTRYPOINT ["/app/tuliprox"]
-CMD ["-s", "-p", "/app/config"]
-
-# -----------------------------------------------------------------
-# Final Image #2: Production image based on scratch
-# -----------------------------------------------------------------
-FROM scratch AS scratch-final
-
-ARG RUST_TARGET=x86_64-unknown-linux-musl
-
-# Copy timezone data and localtime from tz-prep
-COPY --from=tz-prep /output/usr/share/zoneinfo /usr/share/zoneinfo
-COPY --from=tz-prep /output/etc/localtime /etc/localtime
-
-# Copy SSL certificates from a builder stage that has them
 COPY --from=rust-build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 # App
